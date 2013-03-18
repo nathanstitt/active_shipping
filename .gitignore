@@ -6,4 +6,8 @@ sample.rb
 *.orig
 pkg
 .dotest
+<<<<<<< HEAD
 test/fixtures.yml
+=======
+Gemfile.lock
+>>>>>>> 4cb4dd8db8e903946c9ecdcc6b4ed14bd1685ae5

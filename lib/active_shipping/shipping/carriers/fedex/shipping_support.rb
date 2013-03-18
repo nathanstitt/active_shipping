@@ -1,24 +1,24 @@
-require 'money'
+#require 'money'
 require 'base64'
 
 module ActiveMerchant
     module Shipping
         module FedExShippingSupport
-            
+
             def ship( shipment, options={} )
-                
+
                 req = build_shipment_request(shipment)
                 shipment.log(req)
-                
+
                 response = commit(save_request(req), (options[:test] || false)).gsub(/<(\/)?.*?\:(.*?)>/, '<\1\2>')
 
                 shipment.log(response)
-            
+
                 parse_shipment_response(response, shipment)
-                
-                shipment   
+
+                shipment
             end
-            
+
             def parse_shipment_response(response, shipment)
 
                 xml = REXML::Document.new(response)
@@ -48,14 +48,14 @@ module ActiveMerchant
                         version_node << XmlNode.new('Intermediate', '0')
                         version_node << XmlNode.new('Minor', '0')
                     end
-                    
+
                     root_node << XmlNode.new('RequestedShipment') do |rs|
                         rs << XmlNode.new('ShipTimestamp', shipment.shipped_at )
                         rs << XmlNode.new('DropoffType', shipment.dropoff_type || 'REGULAR_PICKUP' )
                         rs << XmlNode.new('ServiceType', shipment.service)
                         rs << XmlNode.new('PackagingType', shipment.packages.first.shipper_type_id )
                         rs << XmlNode.new('TotalWeight') do |t|
-                            if shipment.packages.first.using_metric? 
+                            if shipment.packages.first.using_metric?
                                 t << XmlNode.new('Units', 'KG')
                                 t << XmlNode.new('Value', shipment.packages.reduce(0){|sum,p| sum+= p.kgs } )
                             else
@@ -103,7 +103,7 @@ module ActiveMerchant
                             rs << XmlNode.new('RequestedPackageLineItems') do |p|
                                 p << XmlNode.new('SequenceNumber', package_index)
                                 p << XmlNode.new('Weight') do |w|
-                                    if shipment.packages.first.using_metric? 
+                                    if shipment.packages.first.using_metric?
                                         w << XmlNode.new('Units', 'KG')
                                         w << XmlNode.new('Value', shipment.packages.reduce(0){|sum,p| sum+= p.kgs } )
                                     else
@@ -113,7 +113,7 @@ module ActiveMerchant
                                 end
                                 # JDW: Assigning all the weight to the first item to get around a FedEx bug. Once FeEx fixes the bug
                                 # it should be possible (and correct) to remove the Weight element entirely.
- 
+
                             end
                         end
                     end

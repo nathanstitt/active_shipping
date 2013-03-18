@@ -33,6 +33,7 @@ module ActiveMerchant #:nodoc:
         @value = Package.cents_from(options[:value])
         @currency = options[:currency] || (options[:value].currency if options[:value].respond_to?(:currency))
         @cylinder = (options[:cylinder] || options[:tube]) ? true : false
+        @gift = options[:gift] ? true : false
       end
 
       def using_metric?
@@ -43,6 +44,8 @@ module ActiveMerchant #:nodoc:
         @cylinder
       end
       alias_method :tube?, :cylinder?
+      
+      def gift?; @gift end
       
       def ounces(options={})
         weight(options).in_ounces.amount
@@ -100,9 +103,9 @@ module ActiveMerchant #:nodoc:
         else
           case money
           when Float
-            (money * 100).to_i
+            (money * 100).round
           when String
-            money =~ /\./ ? (money.to_f * 100).to_i : money.to_i
+            money =~ /\./ ? (money.to_f * 100).round : money.to_i
           else
             money.to_i
           end

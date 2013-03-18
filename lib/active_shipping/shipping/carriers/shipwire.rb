@@ -37,7 +37,7 @@ module ActiveMerchant
           :items => [ { :sku => '', :quantity => 1 } ]
         )
       rescue ActiveMerchant::Shipping::ResponseError => e
-        e.message != "Could not verify e-mail/password combination"
+        e.message != "Could not verify Username/EmailAddress and Password combination"
       end
       
       private
@@ -82,6 +82,7 @@ module ActiveMerchant
           xml.tag! 'Address1', destination.address1
           xml.tag! 'Address2', destination.address2 unless destination.address2.blank?
           xml.tag! 'Address3', destination.address3 unless destination.address3.blank?
+          xml.tag! 'Company', destination.company unless destination.company.blank?
           xml.tag! 'City', destination.city
           xml.tag! 'State', destination.state unless destination.state.blank?
           xml.tag! 'Country', destination.country_code
@@ -113,9 +114,11 @@ module ActiveMerchant
       def build_rate_estimates(response, origin, destination)
         response["rates"].collect do |quote|
           RateEstimate.new(origin, destination, carrier_for(quote["service"]), quote["service"],
-            :service_code  => quote["method"],
-            :total_price   => quote["cost"],
-            :currency      => quote["currency"]
+            :service_code    => quote["method"],
+            :total_price     => quote["cost"],
+            :currency        => quote["currency"],
+            :delivery_range  => [ timestamp_from_business_day(quote["delivery_min"]),
+                                  timestamp_from_business_day(quote["delivery_max"]) ]
           )
         end
       end
@@ -139,6 +142,10 @@ module ActiveMerchant
           rate["service"]   = parse_child_text(e, "Service")
           rate["cost"]      = parse_child_text(e, "Cost")
           rate["currency"]  = parse_child_attribute(e, "Cost", "currency")
+          if delivery_estimate = e.elements["DeliveryEstimate"]
+            rate["delivery_min"]  = parse_child_text(delivery_estimate, "Minimum").to_i
+            rate["delivery_max"]  = parse_child_text(delivery_estimate, "Maximum").to_i
+          end
           response["rates"] << rate
         end
 
@@ -166,7 +173,7 @@ module ActiveMerchant
         if element = parent.elements[name]
           element.attributes[attribute]
         end
-      end      
+      end
     end
   end
 end

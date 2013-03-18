@@ -1,6 +1,6 @@
-## this is based off 
+## this is based off
 
-require 'money'
+#require 'money'
 require 'base64'
 
 module ActiveMerchant
@@ -15,16 +15,16 @@ module ActiveMerchant
 
             def ship( shipment, options={} )
                 request = build_shipment_confirm_request(shipment)
-                
+
                 shipment.log(request)
-                
+
                 response = commit(:shipment_confirm, save_request(build_access_request + request), (options[:test] || false))
                 shipment.log(response)
-                
+
                 parse_shipment_confirm(shipment, response)
-                
+
                 if shipment.allowed_price_range.blank? || shipment.allowed_price_range.include( shipment.price )
-                    
+
                     request = build_shipment_accept_request(shipment)
                     shipment.log(request)
                     response = commit(:shipment_accept, save_request(build_access_request + request), (options[:test] || false))
@@ -41,10 +41,10 @@ module ActiveMerchant
                 shipment.log(response)
                 parse_void_shipment(shipment, response)
                 shipment
-            end  
+            end
 
-            protected 
-            
+            protected
+
             def add_location(xml, name, object)
                 xml.tag!(name) do
                     node_name = (name == 'Shipper' ? 'Name' : 'CompanyName')
@@ -103,7 +103,7 @@ module ActiveMerchant
                         if ( 'GIF' == shipment.printer.label_format )
                             xml.LabelImageFormat { xml.Code shipment.printer.label_format }
                         else
-                            xml.LabelStockSize do 
+                            xml.LabelStockSize do
                                 xml.Height shipment.printer.height || 4
                                 xml.Width  shipment.printer.width  || 8
                             end
@@ -176,7 +176,8 @@ module ActiveMerchant
             def parse_money(element)
                 value = element.elements['MonetaryValue'].text
                 currency = element.elements['CurrencyCode'].text
-                Money.new((BigDecimal(value) * 100).to_i, currency)
+                BigDecimal(value)
+#                Money.new((BigDecimal(value) * 100).to_i, currency)
             end
 
             def parse_shipment_accept(shipment, response)
