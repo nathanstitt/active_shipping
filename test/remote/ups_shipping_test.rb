@@ -1,7 +1,7 @@
 require 'test_helper'
 
 class UPSShippingTest < Test::Unit::TestCase
-  
+
     def setup
         @packages  = TestFixtures.packages
         @locations = TestFixtures.locations
@@ -9,9 +9,9 @@ class UPSShippingTest < Test::Unit::TestCase
         @carrier   = UPS.new(fixtures(:ups))
 
     end
-  
+
   def test_ship_package
- 
+
       shipper = Shipper.new(
                             :shipper_number=>fixtures(:ups)[:account],
                             :name => "AllMed",
@@ -34,14 +34,14 @@ class UPSShippingTest < Test::Unit::TestCase
                                                           :width=>8, :height=>4
                                                       }),
                               :number => '3233',
-                              :service => '03' 
+                              :service => '03'
                               )
 
-      
-      @carrier.ship( shipment, { 
+
+      @carrier.ship( shipment, {
                                     :test=>true
                                 } )
-      
+
 
       # usefull for debugging
       # unless shipment.labels.empty?
@@ -56,13 +56,13 @@ class UPSShippingTest < Test::Unit::TestCase
       #         xml.write( f, 2 )
       #     end
       # end
-      
+
       assert_equal 2, shipment.labels.length
-      
+
       assert shipment.labels.first.data =~ /TRACKING \#: 1Z/
-          
+
   end
 
 
- 
+
 end
